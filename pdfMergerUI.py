@@ -1,10 +1,15 @@
 #!/usr/bin/python
 from Tkinter import *
 from ScrolledText import *
+from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
 import tkMessageBox
 import tkFileDialog
 import Tkconstants
+import os
+import sys
 
+import datetime
+import glob
 
 class pdfMergerUI(Frame):
 	
@@ -89,22 +94,73 @@ class pdfMergerUI(Frame):
 
 	def start(self):
 		self.log("Starting")
-		if (self.returned_values['sourceDir'] == None):
+		self.source = self.browseSource.get("1.0","end-1c")
+		self.destination = self.browseDest.get("1.0","end-1c")
+		if (self.source== None):
 			self.warningBox("Warning", "No source directory has been entered")
-		if (self.returned_values['destDir'] == None):
+		if (self.destination == None):
 			self.warningBox("Warning", "No destination directory has been entered")
 
 
-		# if self.returned_values['interlace'] == True:
-		# 	self.interlace(self.returned_values['sourceDir'], self.returned_values['destDir'])
-		# else:
-		# 	self.merge(self.returned_values['sourceDir'], self.returned_values['destDir'])
+		if self.returned_values['interlace'] == True:
+		 	self.interlace()
+		else:
+		 	self.merge()
 
 	def log(self, msg):
 		self.scrolledLogger.configure(state='normal')
 		self.scrolledLogger.insert(END, msg + "\n")
 		self.scrolledLogger.see('end')
 		self.scrolledLogger.configure(state='disabled')
+
+	def merge(self):
+		(pdfFiles, pdfNo) = self.initPdfFunc()
+		if (pdfFiles > 0):
+			saveFile = "merged_" + str(pdfNo) + "_" + str(datetime.date.today()) + ".pdf"
+			merger = PdfFileMerger()
+			self.log("Merging....")
+			for filename in pdfFiles:
+				merger.append(PdfFileReader(os.path.join(self.destination, filename), 'rb'))
+
+			merger.write(os.path.join(self.destination, saveFile))
+			string = "Done file save to %s/%s" % (self.destination, saveFile)
+			self.log(string)
+
+
+	def interlace(self):
+		(pdfFiles, pdfNo) = self.initPdfFunc()
+		if (pdfFiles > 0):
+			saveFile = "merged_" + str(pdfNo) + "_" + str(datetime.date.today()) + ".pdf"
+			merger = PdfFileMerger()
+			self.log("Merging....")
+			for filename in pdfFiles:
+				merger.append(PdfFileReader(os.path.join(self.destination, filename), 'rb'))
+
+			merger.write(os.path.join(self.destination, saveFile))
+			string = "Done file save to %s/%s" % (self.destination, saveFile)
+			self.log(string)
+
+	def initPdfFunc(self):
+		sourceDIR = self.source + "/"
+		destinationDIR = self.destination + "/"
+		pdf_files = 0
+		pdfNumber = 0
+		if (os.path.isdir(sourceDIR)):
+			if (not os.path.isdir(destinationDIR)):
+				self.log("Making sestination directory")
+				os.mkdir(destinationDIR)
+
+				pdf_files = [f for f in os.listdir(sourceDIR) if f.endswith('pdf')]
+				pdf_files.sort()
+
+				if (len(pdf_files) > 1):
+					merged_files = [f for f in os.listdir(destinationDIR + "/") if f.startswith('merged_')]
+					pdfNumber = len(merged_files) + 1
+
+		else:
+			self.log("Source directory does not exist")
+			
+		return (pdf_files, pdfNumber)
 
 if __name__=='__main__':
 	
