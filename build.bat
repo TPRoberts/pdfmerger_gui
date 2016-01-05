@@ -1,1 +1,1 @@
-pyinstaller.exe --onefile --icon=pdfmerger.ico --version-file=version.txt pdfMergerUI.py
+pyinstaller.exe --icon=pdfmerger.ico --version-file=version.txt --windowed --onefile pdfMergerUI.py
