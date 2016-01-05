@@ -1,5 +1,6 @@
 #!/usr/bin/python
 from Tkinter import *
+from Tkinter import Tk
 from ScrolledText import *
 from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
 import tkMessageBox
@@ -17,7 +18,10 @@ class pdfMergerUI(Frame):
 
 		Frame.__init__(self, root)
 		self.returned_values = {}    # Create an empty dict.
-		x = 700
+		if (os.name == 'nt'):
+			x = 750
+		else:
+			x = 700
 		y = 350
 		paddingX = 5
 		paddingY = 5
@@ -34,6 +38,9 @@ class pdfMergerUI(Frame):
 		root.resizable(width=False, height=False)
 		root.geometry('{}x{}'.format(x, y))
 		root.wm_title("PDF Merger")
+		if (os.name == 'nt'):
+			root.iconbitmap(default='pdfmerger.ico')
+
 		
 		# define buttons, text views and scroll views
 		self.browseSource = Text(text=self.returned_values['sourceDir'], width=70,height=1)
@@ -51,7 +58,7 @@ class pdfMergerUI(Frame):
 		self.interlaceOp = Checkbutton(text='Enable interlacing', command=self.setInterlace, width=17,height=1)
 		self.interlaceOp.grid(row=3, column=1, padx=paddingX, pady=paddingY)
 
-		self.scrolledLogger = ScrolledText(state='disabled', width=90, height=10)
+		self.scrolledLogger = ScrolledText(state='disabled', width=90, height=10, background="black", fg="white")
 		self.scrolledLogger.grid(row=5, column=0, rowspan=2, columnspan=3, padx=paddingX, pady=paddingY)
 
 		self.start = Button(text='Begin', command=self.start)
@@ -75,10 +82,12 @@ class pdfMergerUI(Frame):
 		return tkMessageBox.askyesno(title, question)
 
 	def getSourceDir(self):
+		self.browseSource.delete('1.0', END)
 		self.returned_values['sourceDir'] = tkFileDialog.askdirectory(**self.dir_opt)
 		self.browseSource.insert(INSERT, self.returned_values['sourceDir'])
 
 	def getDestDir(self):
+		self.browseDest.delete('1.0', END)
 		self.returned_values['destDir']  = tkFileDialog.askdirectory(**self.dir_opt)
 		self.browseDest.insert(INSERT, self.returned_values['destDir'])
 
@@ -115,46 +124,58 @@ class pdfMergerUI(Frame):
 
 	def merge(self):
 		(pdfFiles, pdfNo) = self.initPdfFunc()
+		sourceDIR = self.source + "/"
+		destinationDIR = self.destination + "/"
 		if (pdfFiles > 0):
 			saveFile = "merged_" + str(pdfNo) + "_" + str(datetime.date.today()) + ".pdf"
 			merger = PdfFileMerger()
 			self.log("Merging....")
 			for filename in pdfFiles:
-				merger.append(PdfFileReader(os.path.join(self.destination, filename), 'rb'))
-
-			merger.write(os.path.join(self.destination, saveFile))
-			string = "Done file save to %s/%s" % (self.destination, saveFile)
+				merger.append(PdfFileReader(os.path.join(sourceDIR, filename), 'rb'))
+			merger.write(os.path.join(destinationDIR, saveFile).encode("utf8"))
+			string = "Done file save to %s%s" % (destinationDIR, saveFile)
 			self.log(string)
 
 
 	def interlace(self):
 		(pdfFiles, pdfNo) = self.initPdfFunc()
+		sourceDIR = self.source + "/"
+		destinationDIR = self.destination + "/"
 		if (pdfFiles > 0):
-			saveFile = "merged_" + str(pdfNo) + "_" + str(datetime.date.today()) + ".pdf"
-			merger = PdfFileMerger()
-			self.log("Merging....")
-			for filename in pdfFiles:
-				merger.append(PdfFileReader(os.path.join(self.destination, filename), 'rb'))
+			document1 = PdfFileReader(open(sourceDIR + pdfFiles[0], 'rb'))
+			document2 = PdfFileReader(open(sourceDIR + pdfFiles[1], 'rb'))
+			saveFile = "interlaced_" + str(pdfNo) + "_" + str(datetime.date.today()) + ".pdf"
+			self.log("Interlacing....")
+			inter = PdfFileWriter()
+			interlacedFile = os.path.join(destinationDIR, saveFile)
+			for i in range(document1.getNumPages()):
+				document2pagecount =  document2.getNumPages()
+				document2page = document2pagecount - i
+				inter.addPage(document1.getPage(i))
+				inter.addPage(document2.getPage(document2page-1))
+				output_stream = file(interlacedFile, "wb")
+				inter.write(output_stream)
 
-			merger.write(os.path.join(self.destination, saveFile))
-			string = "Done file save to %s/%s" % (self.destination, saveFile)
+			string = "Done file save to %s%s" % (destinationDIR, saveFile)
 			self.log(string)
 
 	def initPdfFunc(self):
 		sourceDIR = self.source + "/"
 		destinationDIR = self.destination + "/"
-		pdf_files = 0
-		pdfNumber = 0
 		if (os.path.isdir(sourceDIR)):
 			if (not os.path.isdir(destinationDIR)):
 				self.log("Making sestination directory")
 				os.mkdir(destinationDIR)
 
-				pdf_files = [f for f in os.listdir(sourceDIR) if f.endswith('pdf')]
-				pdf_files.sort()
+			pdf_files = [f for f in os.listdir(sourceDIR) if f.endswith('pdf')]
+			pdf_files.sort()
 
-				if (len(pdf_files) > 1):
-					merged_files = [f for f in os.listdir(destinationDIR + "/") if f.startswith('merged_')]
+			if (len(pdf_files) > 1):
+				if self.returned_values['interlace'] == True:
+					inter_files = [f for f in os.listdir(destinationDIR) if f.startswith('interlaced_')]
+					pdfNumber = len(inter_files) + 1
+				else:
+					merged_files = [f for f in os.listdir(destinationDIR) if f.startswith('merged_')]
 					pdfNumber = len(merged_files) + 1
 
 		else:
