@@ -39,7 +39,8 @@ class pdfMergerUI(Frame):
 		root.geometry('{}x{}'.format(x, y))
 		root.wm_title("PDF Merger")
 		if (os.name == 'nt'):
-			root.iconbitmap(default='pdfmerger.ico')
+			img = self.resource_path("pdfmerger.ico")
+			root.iconbitmap(default=img)
 
 		
 		# define buttons, text views and scroll views
@@ -182,7 +183,13 @@ class pdfMergerUI(Frame):
 			self.log("Source directory does not exist")
 			
 		return (pdf_files, pdfNumber)
-
+        
+	def resource_path(self, relative):
+		if hasattr(sys, "_MEIPASS"):
+			return os.path.join(sys._MEIPASS, relative)
+            
+		return os.path.join(relative)
+        
 if __name__=='__main__':
 	
 	root = Tk()
