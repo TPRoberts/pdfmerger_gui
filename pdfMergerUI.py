@@ -63,6 +63,9 @@ class pdfMergerUI(Frame):
 
 		self.start = Button(text='Begin', command=self.start)
 		self.start.grid(row=4, column=0, columnspan=2, padx=paddingX, pady=paddingY)
+        
+		self.info = Button(text='Information', command=self.info)
+		self.info.grid(row=4, column=1, padx=paddingX, pady=paddingY)
 		
 		# defining options for opening a directory
 		self.dir_opt = options = {}
@@ -81,6 +84,12 @@ class pdfMergerUI(Frame):
 	def yesNo(self, title, question):
 		return tkMessageBox.askyesno(title, question)
 
+	# Yes No question message box
+	def info(self):
+		#os.system('info.txt')
+		f= open(self.resource_path("info.txt"))
+		self.messageBox("Information", f.read())
+        
 	def getSourceDir(self):
 		self.browseSource.delete('1.0', END)
 		self.returned_values['sourceDir'] = tkFileDialog.askdirectory(**self.dir_opt)
@@ -102,19 +111,22 @@ class pdfMergerUI(Frame):
 			self.log("Interlacing enabled")
 
 	def start(self):
-		self.log("Starting")
 		self.source = self.browseSource.get("1.0","end-1c")
 		self.destination = self.browseDest.get("1.0","end-1c")
-		if (self.source== None):
+		if (self.source== ""):
+			self.log("Warning: No source directory has been entered")
 			self.warningBox("Warning", "No source directory has been entered")
-		if (self.destination == None):
+
+		if (self.destination == ""):
+			self.log("Warning: No destination directory has been entered")
 			self.warningBox("Warning", "No destination directory has been entered")
 
-
-		if self.returned_values['interlace'] == True:
-		 	self.interlace()
-		else:
-		 	self.merge()
+		if (self.destination != "" and self.source != ""):
+			self.log("Starting")
+			if self.returned_values['interlace'] == True:
+				self.interlace()
+			else:
+				self.merge()
 
 	def log(self, msg):
 		self.scrolledLogger.configure(state='normal')
@@ -126,7 +138,7 @@ class pdfMergerUI(Frame):
 		(pdfFiles, pdfNo) = self.initPdfFunc()
 		sourceDIR = self.source + "/"
 		destinationDIR = self.destination + "/"
-		if (pdfFiles > 0):
+		if (len(pdfFiles) > 0):
 			saveFile = "merged_" + str(pdfNo) + "_" + str(datetime.date.today()) + ".pdf"
 			merger = PdfFileMerger()
 			self.log("Merging....")
@@ -135,13 +147,15 @@ class pdfMergerUI(Frame):
 			merger.write(os.path.join(destinationDIR, saveFile).encode("utf8"))
 			string = "Done file save to %s%s" % (destinationDIR, saveFile)
 			self.log(string)
-
+		else:
+			string = "Warning: Found no pdf files in %s" % (sourceDIR)
+			self.log(string)
 
 	def interlace(self):
 		(pdfFiles, pdfNo) = self.initPdfFunc()
 		sourceDIR = self.source + "/"
 		destinationDIR = self.destination + "/"
-		if (pdfFiles > 0):
+		if (len(pdfFiles) > 0):
 			document1 = PdfFileReader(open(sourceDIR + pdfFiles[0], 'rb'))
 			document2 = PdfFileReader(open(sourceDIR + pdfFiles[1], 'rb'))
 			saveFile = "interlaced_" + str(pdfNo) + "_" + str(datetime.date.today()) + ".pdf"
@@ -158,10 +172,15 @@ class pdfMergerUI(Frame):
 
 			string = "Done file save to %s%s" % (destinationDIR, saveFile)
 			self.log(string)
+		else:
+			string = "Warning: Found no pdf files in %s" % (sourceDIR)
+			self.log(string)
 
 	def initPdfFunc(self):
 		sourceDIR = self.source + "/"
 		destinationDIR = self.destination + "/"
+		pdfFiles = 0
+		pdfNumber = 0
 		if (os.path.isdir(sourceDIR)):
 			if (not os.path.isdir(destinationDIR)):
 				self.log("Making sestination directory")

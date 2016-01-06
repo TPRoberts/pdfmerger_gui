@@ -1,0 +1,16 @@
+PDF Merger
+
+"Browse for Source"
+Point to the directory of where the pdf files you wish to merge are located.
+
+To make sure the files are merged correctly, name them in alphanumerical order. I.e
+Files named 1.pdf, 2.pdf, will produce a merged pdf with 1.pdf appearing first followed by 2.pdf.
+
+"Browse for destination"
+This where the finished product will be saved, the save file name and location will appear in the log messaged below.
+
+"Enable interlacing"
+This is used when you want to interlace each page of 2 documents into one file. I.e document1.pdf has pages 1, 3, 5 and document2.pdf has pages 6, 4, 2. The interlaced file will be, interlaced.pdf with pages 1,2,3,4,5 and 6.
+
+"Begin"
+This will start the process with logs appearing below.

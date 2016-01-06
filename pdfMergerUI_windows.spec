@@ -5,6 +5,7 @@ a = Analysis(['pdfMergerUI.py'],
              hookspath=None,
              runtime_hooks=None)
 a.datas += [('pdfmerger.ico','C:\\pdfmerger_gui\\pdfmerger.ico','DATA')]
+a.datas += [('info.txt','C:\\pdfmerger_gui\\info.txt','.')]
 pyz = PYZ(a.pure)
 exe = EXE(pyz,
           a.scripts,
