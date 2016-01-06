@@ -1,4 +1,4 @@
 #!/bin/sh
 
 
-pyinstaller --onefile pdfMergerUI.py
+pyinstaller pdfMergerUI_linux.spec
