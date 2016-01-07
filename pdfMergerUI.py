@@ -41,6 +41,10 @@ class pdfMergerUI(Frame):
 		if (os.name == 'nt'):
 			img = self.resource_path("pdfmerger.ico")
 			root.iconbitmap(default=img)
+		else:
+			img = self.resource_path("pdfmerger.gif")
+			icon = PhotoImage(file=img)
+			root.tk.call('wm', 'iconphoto', root._w, icon)
 		
 		# define buttons, text views and scroll views
 		self.browseSource = Text(text=self.returned_values['sourceDir'], width=70,height=1)

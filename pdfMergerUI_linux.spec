@@ -15,6 +15,7 @@ a = Analysis(['pdfMergerUI.py'],
              win_private_assemblies=None,
              cipher=block_cipher)
 a.datas += [('info.txt','/home/tom/pdfmerger_gui/info.txt','.')]
+a.datas += [('pdfmerger.gif','/home/tom/pdfmerger_gui/pdfmerger.gif','data')]
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
