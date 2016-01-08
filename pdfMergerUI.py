@@ -187,7 +187,7 @@ class pdfMergerUI(Frame):
 		pdfNumber = 0
 		if (os.path.isdir(sourceDIR)):
 			if (not os.path.isdir(destinationDIR)):
-				self.log("Making sestination directory")
+				self.log("Making destination directory")
 				os.mkdir(destinationDIR)
 
 			pdf_files = [f for f in os.listdir(sourceDIR) if f.endswith('pdf')]
